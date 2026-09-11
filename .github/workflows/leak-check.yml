@@ -1,0 +1,24 @@
+name: leak-check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  api-hosts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Everything in this repository is public. The API endpoint must stay a
+      # placeholder — partners receive the real one from their ShipStampede
+      # contact. This file is excluded from its own search so the patterns
+      # below do not match themselves.
+      - name: Fail if a real API host is committed
+        run: |
+          if git grep -nE 'api\.shipstampede|sandbox\.shipstampede' \
+               -- . ':!.github/workflows/leak-check.yml'; then
+            echo "::error::A real ShipStampede API host is committed (see matches above). Replace it with the placeholder."
+            exit 1
+          fi
+          echo "Clean: no API hosts committed."
